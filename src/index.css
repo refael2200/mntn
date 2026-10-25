@@ -1,0 +1,45 @@
+@import url("https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;700;800&family=Source+Serif+4:opsz,wght@8..60,600;8..60,700&display=swap");
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* MNTN design tokens — HSL channels, mapped in tailwind.config.ts.
+   Figma: BG #0B1D26, Accent #FBD784, White #FFFFFF. The design is dark-only,
+   so :root and .dark share the same palette. */
+@layer base {
+  :root,
+  .dark {
+    --background: 200 55% 10%;
+    --foreground: 0 0% 100%;
+
+    --card: 200 55% 10%;
+    --card-foreground: 0 0% 100%;
+    --popover: 200 55% 12%;
+    --popover-foreground: 0 0% 100%;
+
+    --primary: 42 94% 75%;
+    --primary-foreground: 200 55% 10%;
+    --secondary: 200 40% 16%;
+    --secondary-foreground: 0 0% 100%;
+    --muted: 200 40% 16%;
+    --muted-foreground: 0 0% 100% / 0.5;
+    --accent: 42 94% 75%;
+    --accent-foreground: 200 55% 10%;
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 100%;
+
+    --border: 0 0% 100% / 0.15;
+    --input: 0 0% 100% / 0.15;
+    --ring: 42 94% 75%;
+    --radius: 0rem;
+  }
+
+  html {
+    scroll-behavior: smooth;
+  }
+
+  body {
+    @apply bg-background font-sans text-foreground antialiased;
+  }
+}

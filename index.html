@@ -1,0 +1,763 @@
+<!doctype html>
+<html lang="en" class="dark">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>MNTN — Hiking Guide</title>
+  <meta name="description" content="Be prepared for the mountains and beyond — a hiking guide by MNTN." />
+  <!-- Standalone preview: mirrors src/ (React + Tailwind). Not pushed to Lovable.
+       Opens directly from the folder (double-click) — motion CSS/JS are inlined copies of
+       src/styles/motion.css and src/lib/motion.ts. Needs internet for Tailwind CDN + Google Fonts. -->
+  <script>
+    // Same as initMotion(): opt in before first paint so nothing flashes. Safety net if the engine fails to load.
+    if (!matchMedia("(prefers-reduced-motion: reduce)").matches) {
+      document.documentElement.classList.add("motion");
+      setTimeout(() => {
+        const html = document.documentElement;
+        if (!html.classList.contains("is-loaded")) html.classList.remove("motion");
+      }, 5000);
+    }
+  </script>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;700;800&family=Source+Serif+4:opsz,wght@8..60,600;8..60,700&display=swap" rel="stylesheet" />
+  <style>
+/* Inlined copy of src/styles/motion.css */
+/*
+ * MNTN motion states. Driven by src/lib/motion.ts, which adds:
+ *   html.motion     — motion enabled (never set under prefers-reduced-motion)
+ *   html.is-loaded  — intro curtain lifts
+ *   .is-in          — on [data-reveal] triggers
+ * Intro/reveal effects use the individual `translate` / `scale` properties so
+ * they compose with the engine's parallax `transform`.
+ */
+
+:root {
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-io: cubic-bezier(0.77, 0, 0.18, 1);
+  --intro: 1.1s;
+}
+
+/* ---------- Always-on micro-interactions ---------- */
+
+.fx-link {
+  background: linear-gradient(currentColor, currentColor) 0 100% / 0 1px no-repeat;
+  transition:
+    background-size 0.5s var(--ease-out),
+    color 0.3s;
+}
+.fx-link:hover {
+  background-size: 100% 1px;
+}
+
+.site-header {
+  transition:
+    transform 0.6s var(--ease-out),
+    background-color 0.4s,
+    padding 0.4s var(--ease-out),
+    top 0.4s var(--ease-out);
+}
+.site-header.is-scrolled {
+  top: 0;
+  padding-top: 20px;
+  padding-bottom: 20px;
+  background-color: hsl(var(--background) / 0.72);
+  -webkit-backdrop-filter: blur(14px);
+  backdrop-filter: blur(14px);
+}
+.site-header.is-hidden {
+  transform: translateY(-100%);
+}
+
+[data-slide] {
+  transition: color 0.4s;
+}
+[data-slide].is-active {
+  color: hsl(var(--accent));
+}
+
+/* ---------- Custom cursor (fine pointers only, injected by the engine) ---------- */
+
+.has-cursor,
+.has-cursor * {
+  cursor: none !important;
+}
+.cursor-dot,
+.cursor-ring {
+  position: fixed;
+  left: 0;
+  top: 0;
+  z-index: 100;
+  pointer-events: none;
+  border-radius: 9999px;
+  transition: opacity 0.3s;
+}
+.cursor-dot {
+  width: 6px;
+  height: 6px;
+  margin: -3px 0 0 -3px;
+  background: hsl(var(--accent));
+}
+.cursor-ring {
+  width: 40px;
+  height: 40px;
+  margin: -20px 0 0 -20px;
+  border: 1px solid hsl(var(--foreground) / 0.5);
+  transition:
+    width 0.45s var(--ease-out),
+    height 0.45s var(--ease-out),
+    margin 0.45s var(--ease-out),
+    background-color 0.3s,
+    border-color 0.3s,
+    opacity 0.3s;
+}
+.cursor-ring.is-hover {
+  width: 72px;
+  height: 72px;
+  margin: -36px 0 0 -36px;
+  border-color: hsl(var(--accent));
+  background-color: hsl(var(--accent) / 0.12);
+}
+.cursor-ring.is-down {
+  width: 28px;
+  height: 28px;
+  margin: -14px 0 0 -14px;
+}
+.cursor-hidden {
+  opacity: 0;
+}
+
+/* ---------- Motion (opt-in via html.motion) ---------- */
+
+@media (prefers-reduced-motion: no-preference) {
+  html.motion:not(.is-loaded) {
+    overflow: hidden;
+  }
+
+  [data-speed],
+  [data-drift],
+  [data-magnetic] {
+    will-change: transform;
+  }
+
+  /* Intro curtain */
+  .motion .intro-curtain {
+    display: flex;
+    transition:
+      transform 1.1s var(--ease-io) 0.5s,
+      visibility 0s 1.6s;
+  }
+  .motion.is-loaded .intro-curtain {
+    transform: translateY(-100%);
+    visibility: hidden;
+  }
+  .motion .intro-logo {
+    display: inline-flex;
+    overflow: hidden;
+  }
+  .motion .intro-logo > span {
+    display: inline-block;
+    transform: translateY(105%);
+    animation: fx-intro-letter 0.9s var(--ease-out) forwards;
+    animation-delay: calc(var(--i) * 80ms + 0.1s);
+  }
+  .motion.is-loaded .intro-logo > span {
+    animation: fx-intro-letter-out 0.6s var(--ease-io) forwards;
+    animation-delay: calc(var(--i) * 40ms);
+  }
+
+  /* Hero layers */
+  .motion .fx-hero-bg {
+    opacity: 0;
+    scale: 1.3;
+    transition:
+      opacity 1.4s ease calc(var(--intro) - 0.3s),
+      scale 2.8s var(--ease-out) calc(var(--intro) - 0.3s);
+  }
+  .motion .fx-hero-mg,
+  .motion .fx-hero-vg {
+    scale: 1.04;
+    transition: translate 2.4s var(--ease-out);
+  }
+  .motion .fx-hero-mg {
+    translate: 0 18%;
+    transition-delay: calc(var(--intro) - 0.1s);
+  }
+  .motion .fx-hero-vg {
+    translate: 0 32%;
+    transition-delay: var(--intro);
+  }
+  .motion.is-loaded .fx-hero-bg {
+    opacity: 1;
+    scale: 1.06;
+  }
+  .motion.is-loaded .fx-hero-mg,
+  .motion.is-loaded .fx-hero-vg {
+    translate: none;
+  }
+
+  /* Masked word reveal */
+  .motion .word {
+    display: inline-block;
+    overflow: hidden;
+    vertical-align: top;
+    padding-bottom: 0.12em;
+    margin-bottom: -0.12em;
+  }
+  .motion .word-inner {
+    display: inline-block;
+    transform: translate3d(0, 110%, 0) rotate(5deg);
+    transform-origin: 0 100%;
+    transition: transform 1.2s var(--ease-out);
+    transition-delay: calc(var(--d, 0s) + var(--i, 0) * 70ms);
+  }
+  .motion .is-in .word-inner {
+    transform: none;
+  }
+
+  /* Generic fades — delay via --d */
+  .motion .fx-up,
+  .motion .fx-down,
+  .motion .fx-fade {
+    opacity: 0;
+    transition:
+      opacity 1s var(--ease-out) var(--d, 0s),
+      translate 1.2s var(--ease-out) var(--d, 0s);
+  }
+  .motion .fx-up {
+    translate: 0 32px;
+  }
+  .motion .fx-down {
+    translate: 0 -20px;
+  }
+  .motion .is-in .fx-up,
+  .motion .is-in .fx-down,
+  .motion .is-in .fx-fade,
+  .motion .is-in.fx-fade {
+    opacity: 1;
+    translate: none;
+  }
+
+  /* Tagline: line draws, label tightens in */
+  .motion .fx-line {
+    scale: 0 1;
+    transform-origin: left;
+    transition: scale 1.2s var(--ease-io) var(--d, 0s);
+  }
+  .motion .fx-track {
+    opacity: 0;
+    letter-spacing: 0.9em;
+    transition:
+      opacity 1s ease calc(var(--d, 0s) + 0.25s),
+      letter-spacing 1.6s var(--ease-out) calc(var(--d, 0s) + 0.25s);
+  }
+  .motion .is-in .fx-line {
+    scale: 1 1;
+  }
+  .motion .is-in .fx-track {
+    opacity: 1;
+    letter-spacing: inherit;
+  }
+
+  /* Big section numbers */
+  .motion .fx-num {
+    opacity: 0;
+    translate: -60px 0;
+    transition:
+      opacity 1.4s ease var(--d, 0s),
+      translate 1.8s var(--ease-out) var(--d, 0s);
+  }
+  .motion .is-in .fx-num {
+    opacity: 1;
+    translate: none;
+  }
+
+  /* Photo wipe + zoom-out (trigger is the unclipped parent — IntersectionObserver ignores fully clipped targets) */
+  .motion .fx-img {
+    clip-path: inset(100% 0 0 0);
+    transition: clip-path 1.6s var(--ease-io);
+  }
+  .motion .fx-img img {
+    scale: 1.4;
+    transition: scale 2.2s var(--ease-out);
+  }
+  .motion .is-in > .fx-img {
+    clip-path: inset(0 0 0 0);
+  }
+  .motion .is-in > .fx-img img {
+    scale: 1;
+  }
+  .motion .is-in > .fx-img:hover img {
+    scale: 1.06;
+    transition-duration: 1.2s;
+  }
+
+  /* "scroll down" arrow */
+  .fx-bounce {
+    animation: fx-bounce 2.2s var(--ease-io) infinite;
+  }
+}
+
+@keyframes fx-intro-letter {
+  to {
+    transform: none;
+  }
+}
+@keyframes fx-intro-letter-out {
+  from {
+    transform: none;
+  }
+  to {
+    transform: translateY(-105%);
+  }
+}
+@keyframes fx-bounce {
+  0%,
+  100% {
+    translate: 0 0;
+  }
+  50% {
+    translate: 0 7px;
+  }
+}
+</style>
+  <script src="https://cdn.tailwindcss.com/3.4.16"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['"Plus Jakarta Sans"', "Gilroy", "ui-sans-serif", "system-ui", "sans-serif"],
+            display: ['"Source Serif 4"', '"Chronicle Display"', "Georgia", "serif"],
+          },
+          colors: {
+            border: "hsl(var(--border))",
+            background: "hsl(var(--background) / <alpha-value>)",
+            foreground: "hsl(var(--foreground) / <alpha-value>)",
+            accent: { DEFAULT: "hsl(var(--accent) / <alpha-value>)", foreground: "hsl(var(--accent-foreground))" },
+          },
+        },
+      },
+    };
+  </script>
+  <style>
+    :root {
+      --background: 200 55% 10%;
+      --foreground: 0 0% 100%;
+      --accent: 42 94% 75%;
+      --accent-foreground: 200 55% 10%;
+      --border: 0 0% 100% / 0.15;
+    }
+    html { scroll-behavior: smooth; }
+    body { margin: 0; background: hsl(var(--background)); color: hsl(var(--foreground)); font-family: "Plus Jakarta Sans", sans-serif; -webkit-font-smoothing: antialiased; }
+  </style>
+</head>
+<body>
+<div id="root" class="relative min-h-[100dvh] overflow-x-clip bg-background text-foreground [container-type:inline-size] [--W:max(100cqw,1100px)] [--s:calc(var(--W)/1920)] [--x:calc((100cqw-var(--W))*0.3)] [--y:140px] md:[--y:80px] lg:[--y:max(0px,calc((1920px-100cqw)*0.12))] [--top:120px] lg:[--top:max(150px,calc(var(--s)*287))]">
+
+  <div aria-hidden="true" class="intro-curtain fixed inset-0 z-[60] hidden items-center justify-center bg-background">
+    <span class="intro-logo font-display text-[clamp(3.5rem,9vw,7rem)] font-bold leading-none"><span style="--i:0">M</span><span style="--i:1">N</span><span style="--i:2">T</span><span style="--i:3">N</span></span>
+  </div>
+  <div aria-hidden="true" data-progress class="fixed inset-x-0 top-0 z-50 h-0.5 origin-left scale-x-0 bg-accent"></div>
+
+  <!-- Header -->
+  <header data-header data-reveal="intro" class="site-header fixed inset-x-0 top-6 z-30 px-6 md:px-12 lg:top-16 lg:px-20">
+    <div class="relative flex h-[25px] items-center justify-between">
+      <div class="fx-down" style="--d:calc(var(--intro) + 0.5s)">
+        <a href="/" aria-label="MNTN home" class="font-display text-[32px] font-bold leading-6 tracking-[0.01em] text-foreground">MNTN</a>
+      </div>
+      <nav aria-label="Main" class="absolute left-1/2 hidden -translate-x-1/2 lg:block">
+        <ul class="flex gap-10 text-lg font-bold">
+          <li class="fx-down" style="--d:calc(var(--intro) + 0.6s)"><a href="#section-02" class="fx-link hover:text-accent">Equipment</a></li>
+          <li class="fx-down" style="--d:calc(var(--intro) + 0.68s)"><a href="#" class="fx-link hover:text-accent">About us</a></li>
+          <li class="fx-down" style="--d:calc(var(--intro) + 0.76s)"><a href="#" class="fx-link hover:text-accent">Blog</a></li>
+        </ul>
+      </nav>
+      <div class="fx-down flex items-center gap-4" style="--d:calc(var(--intro) + 0.85s)">
+        <a href="#" data-magnetic class="flex items-center gap-2 text-[17px] font-bold transition-colors hover:text-accent">
+          <svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor" aria-hidden="true" class="size-6"><path fill-rule="evenodd" clip-rule="evenodd" d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2ZM7.07 18.28c.43-.9 3.05-1.78 4.93-1.78s4.51.88 4.93 1.78A7.88 7.88 0 0 1 12 20c-1.86 0-3.57-.64-4.93-1.72Zm11.29-1.45c-1.43-1.74-4.9-2.33-6.36-2.33s-4.93.59-6.36 2.33A7.95 7.95 0 0 1 4 12c0-4.41 3.59-8 8-8s8 3.59 8 8c0 1.82-.62 3.49-1.64 4.83ZM12 6c-1.94 0-3.5 1.56-3.5 3.5S10.06 13 12 13s3.5-1.56 3.5-3.5S13.94 6 12 6Zm0 5c-.83 0-1.5-.67-1.5-1.5S11.17 8 12 8s1.5.67 1.5 1.5S12.83 11 12 11Z"/></svg>
+          <span class="hidden sm:inline">Account</span>
+        </a>
+        <button type="button" id="menu-btn" aria-label="Open menu" aria-expanded="false" class="lg:hidden">
+          <svg class="size-7" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="4" x2="20" y1="12" y2="12"/><line x1="4" x2="20" y1="6" y2="6"/><line x1="4" x2="20" y1="18" y2="18"/></svg>
+        </button>
+      </div>
+    </div>
+    <nav id="mobile-nav" aria-label="Mobile" class="mt-6 hidden border-t border-border bg-background/95 backdrop-blur lg:hidden">
+      <ul class="flex flex-col py-2 text-lg font-bold">
+        <li><a href="#section-02" class="block py-3 hover:text-accent">Equipment</a></li>
+        <li><a href="#" class="block py-3 hover:text-accent">About us</a></li>
+        <li><a href="#" class="block py-3 hover:text-accent">Blog</a></li>
+      </ul>
+    </nav>
+  </header>
+
+  <!-- Section nav (SectionNav.tsx) — fixed -->
+  <nav aria-label="Sections" data-reveal="intro" class="fixed right-20 top-[calc(var(--top)+39px)] z-20 hidden gap-8 xl:flex">
+    <ol class="flex flex-col items-end gap-10 pt-4 text-lg font-bold">
+      <li class="fx-up" style="--d:calc(var(--intro) + 1.3s)"><a href="#top" data-slide class="hover:text-accent">Start</a></li>
+      <li class="fx-up" style="--d:calc(var(--intro) + 1.38s)"><a href="#section-01" data-slide class="hover:text-accent">01</a></li>
+      <li class="fx-up" style="--d:calc(var(--intro) + 1.46s)"><a href="#section-02" data-slide class="hover:text-accent">02</a></li>
+      <li class="fx-up" style="--d:calc(var(--intro) + 1.54s)"><a href="#section-03" data-slide class="hover:text-accent">03</a></li>
+    </ol>
+    <div class="fx-fade relative h-60 w-[3px] bg-foreground/50" style="--d:calc(var(--intro) + 1.3s)"><span data-slider-indicator class="absolute inset-x-0 top-0 h-[60px] bg-foreground"></span></div>
+  </nav>
+
+  <!-- Hero -->
+  <section id="top" class="relative h-[calc(var(--s)*1900+var(--y))] overflow-hidden">
+    <img src="public/images/hero-bg.png" alt="" data-speed="0.5" data-depth="10" class="pointer-events-none absolute left-[var(--x)] w-[var(--W)] max-w-none select-none fx-hero-bg top-[calc(var(--y)+var(--s)*-400)] h-[calc(var(--s)*1513)]" />
+    <div aria-hidden="true" class="pointer-events-none absolute inset-x-0 top-0 h-[calc(var(--s)*1200+var(--y))] bg-[linear-gradient(-19.67deg,hsl(var(--background)/0)_31.055%,hsl(var(--background))_108.93%)]"></div>
+
+    <div data-reveal="intro" data-speed="0.35" data-depth="-8" data-fade class="absolute inset-x-0 top-[var(--top)] px-6 md:px-12 lg:left-[26.04%] lg:right-auto lg:px-0">
+      <p class="flex items-center gap-4 text-sm font-extrabold uppercase leading-[22px] tracking-[0.3333em] text-accent sm:gap-6 sm:text-lg lg:gap-8" style="--d:calc(var(--intro) + 0.35s)"><span aria-hidden="true" class="fx-line h-0.5 w-12 shrink-0 bg-accent sm:w-[72px]"></span><span class="fx-track">A Hiking guide</span></p>
+      <h1 data-split data-split-delay="calc(var(--intro) + 0.45s)" class="mt-6 max-w-[10.8em] font-display text-[clamp(2.5rem,4.5834cqw,5.5rem)] font-semibold capitalize leading-[1.1364] lg:mt-8">Be prepared for the Mountains and beyond!</h1>
+      <a href="#section-01" data-magnetic class="fx-up mt-6 inline-flex items-center gap-4 text-lg font-bold transition-colors hover:text-accent lg:mt-8" style="--d:calc(var(--intro) + 1.2s)">
+        scroll down
+        <svg viewBox="0 0 16 24" width="16" height="24" fill="currentColor" aria-hidden="true" class="fx-bounce h-6 w-4"><path d="M16 16L14.59 14.59L9 20.17V0H7V20.17L1.42 14.58L0 16L8 24L16 16Z"/></svg>
+      </a>
+    </div>
+
+    <img src="public/images/hero-mg.png" alt="" data-speed="0.25" data-depth="22" class="pointer-events-none absolute left-[var(--x)] w-[var(--W)] max-w-none select-none fx-hero-mg top-[calc(var(--y)+var(--s)*464)] h-[calc(var(--s)*1422)]" />
+    <img src="public/images/hero-vg.png" alt="" data-speed="0.1" data-depth="36" class="pointer-events-none absolute left-[var(--x)] w-[var(--W)] max-w-none select-none fx-hero-vg top-[calc(var(--y)+var(--s)*768)] h-[calc(var(--s)*926)]" />
+    <div aria-hidden="true" class="pointer-events-none absolute inset-x-0 top-[calc(var(--y)+var(--s)*1200)] h-[calc(var(--s)*700)] bg-gradient-to-b from-background/0 to-background to-[61.384%]"></div>
+
+    <div data-reveal="intro" data-fade class="absolute left-20 top-[calc(var(--top)+72px)] z-10 hidden w-6 flex-col items-center gap-6 lg:flex">
+      <span class="fx-up text-lg font-bold [writing-mode:vertical-rl]" style="--d:calc(var(--intro) + 1.3s)">Follow us</span>
+      <a href="#" aria-label="Instagram" data-magnetic class="fx-up transition-colors hover:text-accent" style="--d:calc(var(--intro) + 1.4s)">
+        <svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor" aria-hidden="true" class="size-6"><path d="M7.8 2h8.4C19.4 2 22 4.6 22 7.8v8.4a5.8 5.8 0 0 1-5.8 5.8H7.8C4.6 22 2 19.4 2 16.2V7.8A5.8 5.8 0 0 1 7.8 2Zm-.2 2A3.6 3.6 0 0 0 4 7.6v8.8C4 18.39 5.61 20 7.6 20h8.8a3.6 3.6 0 0 0 3.6-3.6V7.6C20 5.61 18.39 4 16.4 4H7.6Zm9.65 1.5a1.25 1.25 0 1 1 0 2.5 1.25 1.25 0 0 1 0-2.5ZM12 7a5 5 0 1 1 0 10 5 5 0 0 1 0-10Zm0 2a3 3 0 1 0 0 6 3 3 0 0 0 0-6Z"/></svg>
+      </a>
+      <a href="#" aria-label="Twitter" data-magnetic class="fx-up transition-colors hover:text-accent" style="--d:calc(var(--intro) + 1.5s)">
+        <svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor" aria-hidden="true" class="size-6"><path d="M22.46 6.01c-.77.35-1.6.58-2.47.68a4.3 4.3 0 0 0 1.89-2.38c-.83.5-1.75.85-2.73 1.05a4.28 4.28 0 0 0-7.29 3.9 12.14 12.14 0 0 1-8.85-4.48 4.28 4.28 0 0 0 1.33 5.73 4.27 4.27 0 0 1-1.94-.54v.05a4.29 4.29 0 0 0 3.44 4.2 4.3 4.3 0 0 1-1.93.08 4.29 4.29 0 0 0 4 2.98 8.6 8.6 0 0 1-6.35 1.78A12.13 12.13 0 0 0 8.12 21c7.89 0 12.21-6.54 12.21-12.21l-.01-.56a8.7 8.7 0 0 0 2.14-2.22Z"/></svg>
+      </a>
+    </div>
+  </section>
+
+  <main id="main" class="relative z-10 mx-auto mt-[calc(var(--s)*-460)] flex w-[min(1462px,calc(100%-48px))] flex-col gap-[clamp(6rem,10.417cqw,12.5rem)] pb-[clamp(4rem,6.25cqw,7.5rem)] md:w-[min(1462px,calc(100%-96px))] lg:w-[min(1462px,calc(100%-160px))] xl:w-[min(1462px,calc(100%-400px))]">
+    <!-- Sections are rendered from the same data as src/pages/Index.tsx (see script below). -->
+
+    <footer data-reveal class="grid gap-12 sm:grid-cols-2 lg:grid-cols-[1fr_auto_auto] lg:gap-x-[clamp(3rem,11.042cqw,13.25rem)] lg:gap-y-0">
+      <div class="flex flex-col justify-between sm:col-span-2 lg:col-span-1">
+        <div class="fx-up flex flex-col gap-6">
+          <a href="/" aria-label="MNTN home" class="font-display text-[32px] font-bold leading-[38px] tracking-[0.01em] text-foreground">MNTN</a>
+          <p class="max-w-[303px] text-lg font-bold leading-8">Get out there &amp; discover your next slope, mountain &amp; destination!</p>
+        </div>
+        <p class="fx-up hidden text-lg font-medium leading-8 text-foreground/50 lg:block" style="--d:0.5s">Copyright 2023 MNTN, Inc. Terms &amp; Privacy</p>
+      </div>
+      <nav aria-label="More on The Blog">
+        <h3 class="fx-up text-2xl font-bold leading-8 text-accent" style="--d:0.1s">More on The Blog</h3>
+        <ul class="mt-6 flex flex-col gap-4">
+          <li class="fx-up" style="--d:0.15s"><a href="#" class="fx-link text-lg font-medium leading-8 hover:text-accent">About MNTN</a></li>
+          <li class="fx-up" style="--d:0.2s"><a href="#" class="fx-link text-lg font-medium leading-8 hover:text-accent">Contributors &amp; Writers</a></li>
+          <li class="fx-up" style="--d:0.25s"><a href="#" class="fx-link text-lg font-medium leading-8 hover:text-accent">Write For Us</a></li>
+          <li class="fx-up" style="--d:0.3s"><a href="#" class="fx-link text-lg font-medium leading-8 hover:text-accent">Contact Us</a></li>
+          <li class="fx-up" style="--d:0.35s"><a href="#" class="fx-link text-lg font-medium leading-8 hover:text-accent">Privacy Policy</a></li>
+        </ul>
+      </nav>
+      <nav aria-label="More on MNTN">
+        <h3 class="fx-up text-2xl font-bold leading-8 text-accent" style="--d:0.2s">More on MNTN</h3>
+        <ul class="mt-6 flex flex-col gap-4">
+          <li class="fx-up" style="--d:0.25s"><a href="#" class="fx-link text-lg font-medium leading-8 hover:text-accent">The Team</a></li>
+          <li class="fx-up" style="--d:0.3s"><a href="#" class="fx-link text-lg font-medium leading-8 hover:text-accent">Jobs</a></li>
+          <li class="fx-up" style="--d:0.35s"><a href="#" class="fx-link text-lg font-medium leading-8 hover:text-accent">Press</a></li>
+        </ul>
+      </nav>
+      <p class="fx-up text-lg font-medium leading-8 text-foreground/50 sm:col-span-2 lg:hidden" style="--d:0.5s">Copyright 2023 MNTN, Inc. Terms &amp; Privacy</p>
+    </footer>
+  </main>
+</div>
+
+<script>
+  // Sections — same data and markup as FeatureSection.tsx
+  const SECTIONS = [
+    { id: "section-01", number: "01", tagline: "Get Started", title: "What level of hiker are you?",
+      paragraphs: ["Determining what level of hiker you are can be an important tool when planning future hikes. This hiking level guide will help you plan hikes according to different hike ratings set by various websites like All Trails and Modern Hiker. What type of hiker are you – novice, moderate, advanced moderate, expert, or expert backpacker?"],
+      image: "public/images/section-01.jpg", imageAlt: "Hiker walking a ridge trail above a mountain lake" },
+    { id: "section-02", number: "02", tagline: "Hiking Essentials", title: "Picking the right Hiking Gear!",
+      paragraphs: ["The nice thing about beginning hiking is that you don’t really need any special gear, you can probably get away with things you already have.", "Let’s start with clothing. A typical mistake hiking beginners make is wearing jeans and regular clothes, which will get heavy and chafe wif they get sweaty or wet."],
+      image: "public/images/section-02.jpg", imageAlt: "Hiker with a backpack standing on a rock overlooking mountains", reverse: true },
+    { id: "section-03", number: "03", tagline: "where you go is the key", title: "Understand Your Map & Timing",
+      paragraphs: ["To start, print out the hiking guide and map. If it’s raining, throw them in a Zip-Lock bag. Read over the guide, study the map, and have a good idea of what to expect. I like to know what my next landmark is as I hike. For example, I’ll read the guide and know that say, in a mile, I make a right turn at the junction.."],
+      image: "public/images/section-03.jpg", imageAlt: "Hand holding a compass above a green mountain valley" },
+  ];
+  const esc = (s) => s.replace(/&/g, "&amp;").replace(/</g, "&lt;");
+  const sectionHtml = (s) => `
+    <article id="${s.id}" class="grid scroll-mt-24 items-center gap-10 lg:gap-0 ${s.reverse ? "lg:grid-cols-[38.714fr_61.286fr]" : "lg:grid-cols-[61.286fr_38.714fr]"}">
+      <div data-reveal data-cursor>
+        <div class="fx-img relative aspect-[566/720] w-full overflow-hidden">
+          <img src="${s.image}" alt="${s.imageAlt}" loading="lazy" data-drift="-0.08" class="absolute inset-x-0 -top-[10%] h-[120%] w-full object-cover" />
+        </div>
+      </div>
+      <div data-reveal class="relative pt-14 lg:w-[87.277%] lg:pl-[19.182%] lg:pt-0 ${s.reverse ? "lg:justify-self-end" : "lg:-order-1"}">
+        <span aria-hidden="true" data-drift="0.12" class="pointer-events-none absolute left-0 top-0 select-none text-[clamp(7.5rem,12.5cqw,15rem)] font-bold leading-none text-foreground/10 lg:-top-[0.4292em]"><span class="fx-num block">${s.number}</span></span>
+        <div class="relative flex flex-col gap-6 lg:gap-[27px]">
+          <p class="flex items-center gap-4 text-sm font-extrabold uppercase leading-[22px] tracking-[0.3333em] text-accent sm:gap-6 sm:text-lg" style="--d:0.1s"><span aria-hidden="true" class="fx-line h-0.5 w-12 shrink-0 bg-accent sm:w-[72px]"></span><span class="fx-track">${esc(s.tagline)}</span></p>
+          <h2 data-split data-split-delay="0.25" class="max-w-[8.67em] font-display text-[clamp(2.25rem,3.3334cqw,4rem)] font-semibold leading-[1.2]">${esc(s.title)}</h2>
+          <div class="fx-up max-w-[632px] text-base font-bold leading-7 sm:text-lg sm:leading-8" style="--d:0.55s">${s.paragraphs.map((p) => `<p>${esc(p)}</p>`).join("")}</div>
+          <a href="#" data-magnetic class="fx-up group inline-flex w-fit items-center gap-4 text-lg font-bold text-accent" style="--d:0.7s">
+            <span class="fx-link">read more</span>
+            <svg viewBox="0 0 24 16" width="24" height="16" fill="currentColor" aria-hidden="true" class="h-4 w-6 transition-transform duration-500 group-hover:translate-x-1.5"><path d="M16 16L14.59 14.59L9 20.17V0H7V20.17L1.42 14.58L0 16L8 24L16 16Z" transform="matrix(0 -1 1 0 0 16)"/></svg>
+          </a>
+        </div>
+      </div>
+    </article>`;
+  document.querySelector("main footer").insertAdjacentHTML("beforebegin", SECTIONS.map(sectionHtml).join(""));
+
+  // Mobile menu (React state in Header.tsx)
+  const btn = document.getElementById("menu-btn");
+  const mobileNav = document.getElementById("mobile-nav");
+  btn.addEventListener("click", () => {
+    const open = mobileNav.classList.toggle("hidden") === false;
+    btn.setAttribute("aria-expanded", String(open));
+    btn.setAttribute("aria-label", open ? "Close menu" : "Open menu");
+  });
+  mobileNav.querySelectorAll("a").forEach((a) => a.addEventListener("click", () => {
+    mobileNav.classList.add("hidden");
+    btn.setAttribute("aria-expanded", "false");
+  }));
+</script>
+<script>
+/* MNTN motion engine — plain-JS build of src/lib/motion.ts (keep in sync). */
+(function () {
+const LERP_SCROLL = 0.1;
+const LERP_MOUSE = 0.06;
+const LERP_CURSOR = 0.18;
+const MAGNET_RADIUS = 90;
+const MAGNET_STRENGTH = 0.35;
+const INTRO_TIMEOUT = 2500;
+const SPY_LINE = 0.45; // a section becomes active when its top crosses 45% of the viewport
+const SLIDE_STEP = 60; // px between section-nav labels
+
+const clamp = (v, min = 0, max = 1) => Math.min(max, Math.max(min, v));
+function splitWords(el) {
+  if (el.dataset.splitDone !== undefined) return;
+  const raw = el.dataset.splitDelay ?? "0";
+  const delay = Number.isNaN(Number(raw)) ? raw : `${raw}s`;
+  const words = (el.textContent ?? "").trim().split(/\s+/);
+  el.textContent = "";
+  words.forEach((word, i) => {
+    const outer = document.createElement("span");
+    outer.className = "word";
+    const inner = document.createElement("span");
+    inner.className = "word-inner";
+    inner.style.setProperty("--i", String(i));
+    inner.style.setProperty("--d", delay);
+    inner.textContent = word;
+    outer.appendChild(inner);
+    el.appendChild(outer);
+    if (i < words.length - 1) el.appendChild(document.createTextNode(" "));
+  });
+  el.dataset.splitDone = "";
+}
+function initMotion(root) {
+  const html = document.documentElement;
+  if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+    html.classList.remove("motion");
+    return () => {};
+  }
+  html.classList.add("motion");
+  const finePointer = window.matchMedia("(pointer: fine)").matches;
+  const disposers = [];
+  const listen = (type, fn, opts) => {
+    window.addEventListener(type, fn, opts);
+    disposers.push(() => window.removeEventListener(type, fn, opts));
+  };
+  root.querySelectorAll("[data-split]").forEach(splitWords);
+
+  /* ---------- Intro: wait for hero art, then lift the curtain ---------- */
+  const introEls = root.querySelectorAll('[data-reveal="intro"]');
+  let introDone = false;
+  const startIntro = () => {
+    if (introDone) return;
+    introDone = true;
+    html.classList.add("is-loaded");
+    introEls.forEach(el => el.classList.add("is-in"));
+  };
+  const heroImgs = [...root.querySelectorAll("img[data-speed]")];
+  Promise.all(heroImgs.map(img => img.complete ? Promise.resolve() : img.decode().catch(() => {}))).then(() => requestAnimationFrame(startIntro));
+  const introTimer = window.setTimeout(startIntro, INTRO_TIMEOUT);
+  disposers.push(() => window.clearTimeout(introTimer));
+
+  /* ---------- Scroll reveals ---------- */
+  const io = new IntersectionObserver(entries => {
+    for (const entry of entries) {
+      if (!entry.isIntersecting) continue;
+      entry.target.classList.add("is-in");
+      io.unobserve(entry.target);
+    }
+  }, {
+    rootMargin: "0px 0px -12% 0px",
+    threshold: 0.1
+  });
+  root.querySelectorAll('[data-reveal]:not([data-reveal="intro"])').forEach(el => io.observe(el));
+  disposers.push(() => io.disconnect());
+
+  /* ---------- Pointer ---------- */
+  let tmx = 0;
+  let tmy = 0;
+  let px = window.innerWidth / 2;
+  let py = window.innerHeight / 2;
+  let pointerSeen = false;
+  let dot = null;
+  let ring = null;
+  let rx = px;
+  let ry = py;
+  if (finePointer) {
+    dot = document.createElement("div");
+    dot.className = "cursor-dot cursor-hidden";
+    ring = document.createElement("div");
+    ring.className = "cursor-ring cursor-hidden";
+    document.body.append(dot, ring);
+    html.classList.add("has-cursor");
+    disposers.push(() => {
+      dot?.remove();
+      ring?.remove();
+      html.classList.remove("has-cursor");
+    });
+    listen("pointermove", e => {
+      px = e.clientX;
+      py = e.clientY;
+      tmx = (e.clientX / window.innerWidth - 0.5) * 2;
+      tmy = (e.clientY / window.innerHeight - 0.5) * 2;
+      if (!pointerSeen) {
+        pointerSeen = true;
+        rx = px;
+        ry = py;
+        dot?.classList.remove("cursor-hidden");
+        ring?.classList.remove("cursor-hidden");
+      }
+      const interactive = e.target?.closest?.("a, button, [data-cursor]");
+      ring?.classList.toggle("is-hover", Boolean(interactive));
+    });
+    listen("pointerdown", () => ring?.classList.add("is-down"));
+    listen("pointerup", () => ring?.classList.remove("is-down"));
+    const hide = () => {
+      pointerSeen = false;
+      dot?.classList.add("cursor-hidden");
+      ring?.classList.add("cursor-hidden");
+    };
+    document.documentElement.addEventListener("pointerleave", hide);
+    disposers.push(() => document.documentElement.removeEventListener("pointerleave", hide));
+  }
+
+  /* ---------- Per-frame loop ---------- */
+  const hero = root.querySelector("#top");
+  const layers = [...root.querySelectorAll("[data-speed]")].map(el => ({
+    el,
+    speed: Number(el.dataset.speed),
+    depth: finePointer ? Number(el.dataset.depth ?? 0) : 0
+  }));
+  const fades = [...root.querySelectorAll("[data-fade]")];
+  const drifts = [...root.querySelectorAll("[data-drift]")].map(el => ({
+    el,
+    amount: Number(el.dataset.drift),
+    img: el.tagName === "IMG"
+  }));
+  const magnets = finePointer ? [...root.querySelectorAll("[data-magnetic]")].map(el => ({
+    el,
+    x: 0,
+    y: 0
+  })) : [];
+  const header = root.querySelector("[data-header]");
+  const progress = root.querySelector("[data-progress]");
+  const indicator = root.querySelector("[data-slider-indicator]");
+  const slides = [...root.querySelectorAll("a[data-slide]")];
+  const slideTargets = slides.map(a => document.querySelector(a.hash));
+  let cy = window.scrollY;
+  let mx = 0;
+  let my = 0;
+  let lastY = window.scrollY;
+  let frame = 0;
+  const tick = () => {
+    const sy = window.scrollY;
+    const vh = window.innerHeight;
+    cy += (sy - cy) * LERP_SCROLL;
+    if (Math.abs(sy - cy) < 0.1) cy = sy;
+    mx += (tmx - mx) * LERP_MOUSE;
+    my += (tmy - my) * LERP_MOUSE;
+    const heroH = hero?.offsetHeight ?? vh;
+
+    // Hero parallax (skipped once the hero is far off-screen)
+    if (cy < heroH * 1.2) {
+      for (const { el, speed, depth } of layers) {
+        el.style.transform = `translate3d(${(mx * depth).toFixed(2)}px, ${(cy * speed + my * depth).toFixed(2)}px, 0)`;
+      }
+      const fade = 1 - clamp(cy / (vh * 0.55));
+      for (const el of fades) el.style.opacity = fade.toFixed(3);
+    }
+
+    // Section nav: the thumb rests on the current section's label and glides to
+    // the next one over the last quarter of the way there.
+    if (indicator && slideTargets.length) {
+      const maxScroll = document.documentElement.scrollHeight - vh;
+      const anchors = slideTargets.map((t, i) => i === 0 || !t ? 0 : Math.min(t.getBoundingClientRect().top + sy - vh * SPY_LINE, maxScroll));
+      let k = 0;
+      while (k < anchors.length - 1 && cy >= anchors[k + 1]) k++;
+      let pos = k;
+      if (k < anchors.length - 1) {
+        const t = clamp((cy - anchors[k]) / Math.max(1, anchors[k + 1] - anchors[k]));
+        const e = clamp((t - 0.75) / 0.25);
+        pos += e * e * (3 - 2 * e);
+      }
+      indicator.style.transform = `translate3d(0, ${(pos * SLIDE_STEP).toFixed(1)}px, 0)`;
+      const active = Math.round(pos);
+      slides.forEach((s, i) => {
+        s.classList.toggle("is-active", i === active);
+        if (i === active) s.setAttribute("aria-current", "location");
+        else s.removeAttribute("aria-current");
+      });
+    }
+
+    // Viewport-relative drift (section photos & numbers)
+    for (const { el, amount, img } of drifts) {
+      const box = (img ? el.parentElement : el).getBoundingClientRect();
+      if (box.bottom < -200 || box.top > vh + 200) continue;
+      let t = (box.top + box.height / 2 - vh / 2) * amount;
+      if (img) t = clamp(t, -el.offsetHeight / 12, el.offsetHeight / 12);
+      el.style.transform = `translate3d(0, ${t.toFixed(2)}px, 0)`;
+    }
+
+    // Magnetic elements
+    for (const m of magnets) {
+      const r = m.el.getBoundingClientRect();
+      const dx = px - (r.left + r.width / 2);
+      const dy = py - (r.top + r.height / 2);
+      const near = pointerSeen && Math.hypot(dx, dy) < MAGNET_RADIUS + Math.max(r.width, r.height) / 2;
+      m.x += ((near ? dx * MAGNET_STRENGTH : 0) - m.x) * 0.15;
+      m.y += ((near ? dy * MAGNET_STRENGTH : 0) - m.y) * 0.15;
+      m.el.style.transform = `translate3d(${m.x.toFixed(2)}px, ${m.y.toFixed(2)}px, 0)`;
+    }
+
+    // Cursor
+    if (dot && ring) {
+      rx += (px - rx) * LERP_CURSOR;
+      ry += (py - ry) * LERP_CURSOR;
+      dot.style.transform = `translate3d(${px}px, ${py}px, 0)`;
+      ring.style.transform = `translate3d(${rx.toFixed(2)}px, ${ry.toFixed(2)}px, 0)`;
+    }
+
+    // Header state
+    if (header) {
+      const menuOpen = header.querySelector('[aria-expanded="true"]') !== null;
+      header.classList.toggle("is-scrolled", sy > 60);
+      if (menuOpen || sy < 400 || sy < lastY - 4) header.classList.remove("is-hidden");
+      else if (sy > lastY + 4) header.classList.add("is-hidden");
+    }
+    if (Math.abs(sy - lastY) > 4) lastY = sy;
+    if (progress) {
+      const max = document.documentElement.scrollHeight - vh;
+      progress.style.transform = `scaleX(${max > 0 ? (sy / max).toFixed(4) : 0})`;
+    }
+    frame = requestAnimationFrame(tick);
+  };
+  frame = requestAnimationFrame(tick);
+  disposers.push(() => cancelAnimationFrame(frame));
+  return () => {
+    disposers.forEach(d => d());
+    html.classList.remove("is-loaded");
+  };
+}
+initMotion(document.getElementById("root"));
+})();
+</script>
+</body>
+</html>
