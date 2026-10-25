@@ -179,6 +179,7 @@
     }
     password = pass;
     writeSession(pass);
+    try { localStorage.setItem("mntn-admin-device", "1"); } catch {} // shows the Admin link in the site menu (src/lib/admin.ts)
     render();
     show(true);
   }

@@ -5,6 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Logo } from "@/components/mntn/Logo";
 import { Tagline } from "@/components/mntn/Tagline";
+import { rememberAdminDevice } from "@/lib/admin";
 import { supabase, type NewsletterSignup } from "@/integrations/supabase/client";
 
 /*
@@ -73,6 +74,7 @@ const Admin = () => {
       return;
     }
     writeSession(pass);
+    rememberAdminDevice();
     setPassword(pass);
     setRows((data ?? []) as NewsletterSignup[]);
   }, []);

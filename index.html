@@ -371,6 +371,7 @@
           <li class="fx-down" style="--d:calc(var(--intro) + 0.6s)"><a href="#section-02" class="fx-link hover:text-accent">Equipment</a></li>
           <li class="fx-down" style="--d:calc(var(--intro) + 0.68s)"><a href="#" class="fx-link hover:text-accent">About us</a></li>
           <li class="fx-down" style="--d:calc(var(--intro) + 0.76s)"><a href="#" class="fx-link hover:text-accent">Blog</a></li>
+          <li data-admin-link hidden class="fx-down" style="--d:calc(var(--intro) + 0.84s)"><a href="admin.html" class="fx-link flex items-center gap-2 text-accent hover:text-foreground"><svg aria-hidden="true" class="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="11" x="3" y="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>Admin</a></li>
         </ul>
       </nav>
       <div class="fx-down flex items-center gap-4" style="--d:calc(var(--intro) + 0.85s)">
@@ -388,6 +389,7 @@
         <li><a href="#section-02" class="block py-3 hover:text-accent">Equipment</a></li>
         <li><a href="#" class="block py-3 hover:text-accent">About us</a></li>
         <li><a href="#" class="block py-3 hover:text-accent">Blog</a></li>
+        <li data-admin-link hidden><a href="admin.html" class="flex items-center gap-2 py-3 text-accent hover:text-foreground"><svg aria-hidden="true" class="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="11" x="3" y="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>Admin</a></li>
       </ul>
     </nav>
   </header>
@@ -583,6 +585,16 @@
     ok.classList.remove("hidden");
     ok.classList.add("flex");
   });
+
+  // Admin link — only on admin devices (src/lib/admin.ts). Set by signing in on
+  // admin.html or opening the site once with ?admin. Hides the link only; the
+  // admin page itself is protected by the password checked in Supabase.
+  try {
+    if (new URLSearchParams(location.search).has("admin")) localStorage.setItem("mntn-admin-device", "1");
+    if (localStorage.getItem("mntn-admin-device") === "1") {
+      document.querySelectorAll("[data-admin-link]").forEach((li) => (li.hidden = false));
+    }
+  } catch {}
 
   // Mobile menu (React state in Header.tsx)
   const btn = document.getElementById("menu-btn");

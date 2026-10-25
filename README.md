@@ -18,7 +18,8 @@ Pixel-perfect, responsive build of the [MNTN Figma community design](https://www
 
 - Supabase project `mntn` (`pgcbuflfvkfirfiyiamr`, eu-central-1). Client in `src/integrations/supabase/client.ts` (needs `@supabase/supabase-js`).
 - Table `public.newsletter_signups` (name, email, created_at). Row-level security lets the public key **insert only** — visitors can't read the list. Emails are unique (case-insensitive); a repeat sign-up shows "already on the trail".
-- Admin page: `admin.html` (static site) / `src/pages/Admin.tsx` (register it at `/admin` in your router). Not linked from the site and marked `noindex`.
+- Admin page: `admin.html` (static site) / `src/pages/Admin.tsx` (register it at `/admin` in your router). Marked `noindex`.
+- An **Admin** link appears in the site menu only on admin devices: browsers where someone signed in to the admin page, or opened the site once with `?admin`. It's a convenience only (a `localStorage` flag, see `src/lib/admin.ts`); the password is what protects the data.
 - The password is checked inside Postgres by `public.admin_list_signups(p_password)` against a bcrypt hash in `private.admin_settings` — it is never in the site's code. To change it, run in the Supabase SQL editor:
 
   ```sql

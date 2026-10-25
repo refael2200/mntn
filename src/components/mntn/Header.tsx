@@ -1,5 +1,6 @@
-import { useState, type CSSProperties } from "react";
-import { Menu, X } from "lucide-react";
+import { useEffect, useState, type CSSProperties } from "react";
+import { Lock, Menu, X } from "lucide-react";
+import { isAdminDevice } from "@/lib/admin";
 import { cn } from "@/lib/utils";
 import { AccountIcon } from "./icons";
 import { Logo } from "./Logo";
@@ -10,10 +11,16 @@ const NAV_LINKS = [
   { label: "Blog", href: "#" },
 ];
 
+// Shown only on admin devices (see src/lib/admin.ts); the page itself is password-protected.
+const ADMIN_LINK = { label: "Admin", href: "/admin" };
+
 const delay = (s: string) => ({ "--d": `calc(var(--intro) + ${s})` }) as CSSProperties;
 
 export const Header = () => {
   const [open, setOpen] = useState(false);
+  const [isAdmin, setIsAdmin] = useState(false);
+
+  useEffect(() => setIsAdmin(isAdminDevice()), []);
 
   return (
     <header
@@ -35,6 +42,14 @@ export const Header = () => {
                 </a>
               </li>
             ))}
+            {isAdmin && (
+              <li className="fx-down" style={delay(`${0.6 + NAV_LINKS.length * 0.08}s`)}>
+                <a href={ADMIN_LINK.href} className="fx-link flex items-center gap-2 text-accent hover:text-foreground">
+                  <Lock aria-hidden className="size-4" />
+                  {ADMIN_LINK.label}
+                </a>
+              </li>
+            )}
           </ul>
         </nav>
 
@@ -74,6 +89,18 @@ export const Header = () => {
               </a>
             </li>
           ))}
+          {isAdmin && (
+            <li>
+              <a
+                href={ADMIN_LINK.href}
+                onClick={() => setOpen(false)}
+                className="flex items-center gap-2 py-3 text-accent hover:text-foreground"
+              >
+                <Lock aria-hidden className="size-4" />
+                {ADMIN_LINK.label}
+              </a>
+            </li>
+          )}
         </ul>
       </nav>
     </header>
