@@ -3,6 +3,7 @@ import { FeatureSection, type FeatureSectionProps } from "@/components/mntn/Feat
 import { Footer } from "@/components/mntn/Footer";
 import { Header } from "@/components/mntn/Header";
 import { Hero } from "@/components/mntn/Hero";
+import { Newsletter } from "@/components/mntn/Newsletter";
 import { SectionNav } from "@/components/mntn/SectionNav";
 import { initMotion } from "@/lib/motion";
 import "@/styles/motion.css";
@@ -85,6 +86,7 @@ const Index = () => {
         {SECTIONS.map((section) => (
           <FeatureSection key={section.id} {...section} />
         ))}
+        <Newsletter />
         <Footer />
       </main>
     </div>

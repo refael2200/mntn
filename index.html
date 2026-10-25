@@ -435,6 +435,40 @@
   <main id="main" class="relative z-10 mx-auto mt-[calc(var(--s)*-460)] flex w-[min(1462px,calc(100%-48px))] flex-col gap-[clamp(6rem,10.417cqw,12.5rem)] pb-[clamp(4rem,6.25cqw,7.5rem)] md:w-[min(1462px,calc(100%-96px))] lg:w-[min(1462px,calc(100%-160px))] xl:w-[min(1462px,calc(100%-400px))]">
     <!-- Sections are rendered from the same data as src/pages/Index.tsx (see script below). -->
 
+    <!-- Newsletter (Newsletter.tsx) -->
+    <section id="newsletter" aria-labelledby="newsletter-title" data-reveal class="grid scroll-mt-24 gap-12 border-t border-foreground/10 pt-[clamp(4rem,6.25cqw,7.5rem)] lg:grid-cols-2 lg:gap-x-[clamp(3rem,6.25cqw,7.5rem)]">
+      <div class="flex flex-col gap-6 lg:gap-[27px]">
+        <p class="flex items-center gap-4 text-sm font-extrabold uppercase leading-[22px] tracking-[0.3333em] text-accent sm:gap-6 sm:text-lg" style="--d:0.1s"><span aria-hidden="true" class="fx-line h-0.5 w-12 shrink-0 bg-accent sm:w-[72px]"></span><span class="fx-track">Trail notes</span></p>
+        <h2 id="newsletter-title" data-split data-split-delay="0.25" class="max-w-[9em] font-display text-[clamp(2.25rem,3.3334cqw,4rem)] font-semibold leading-[1.2]">The mountains, delivered to your inbox.</h2>
+      </div>
+      <div class="flex flex-col gap-10">
+        <p class="fx-up max-w-[560px] text-base font-bold leading-7 sm:text-lg sm:leading-8" style="--d:0.45s">One letter a month: new trail guides, gear we actually trust, and the routes worth waking up early for. Written by hikers, for hikers.</p>
+        <form id="newsletter-form" class="fx-up flex flex-col gap-8" style="--d:0.6s">
+          <div class="grid gap-8 sm:grid-cols-2">
+            <div class="flex flex-col gap-1">
+              <label for="newsletter-name" class="text-sm font-extrabold uppercase leading-none tracking-[0.2em] text-foreground/60">Your name</label>
+              <input id="newsletter-name" name="name" autocomplete="given-name" placeholder="First name" required class="w-full rounded-none border-0 border-b-2 border-foreground/30 bg-transparent px-0 py-3 text-lg font-bold text-foreground outline-none transition-colors placeholder:font-medium placeholder:text-foreground/35 focus:border-accent" />
+            </div>
+            <div class="flex flex-col gap-1">
+              <label for="newsletter-email" class="text-sm font-extrabold uppercase leading-none tracking-[0.2em] text-foreground/60">Email address</label>
+              <input id="newsletter-email" name="email" type="email" autocomplete="email" placeholder="you@example.com" required class="w-full rounded-none border-0 border-b-2 border-foreground/30 bg-transparent px-0 py-3 text-lg font-bold text-foreground outline-none transition-colors placeholder:font-medium placeholder:text-foreground/35 focus:border-accent" />
+            </div>
+          </div>
+          <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:gap-8">
+            <button type="submit" data-magnetic class="group inline-flex h-14 w-fit items-center justify-center gap-4 whitespace-nowrap bg-accent px-8 text-lg font-bold text-accent-foreground transition-colors hover:bg-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-background">
+              Join the trail
+              <svg viewBox="0 0 24 16" width="24" height="16" fill="currentColor" aria-hidden="true" class="h-4 w-6 transition-transform duration-500 group-hover:translate-x-1.5"><path d="M16 16L14.59 14.59L9 20.17V0H7V20.17L1.42 14.58L0 16L8 24L16 16Z" transform="matrix(0 -1 1 0 0 16)"/></svg>
+            </button>
+            <p class="text-sm font-medium leading-6 text-foreground/50">No spam, ever. Unsubscribe with one click.</p>
+          </div>
+        </form>
+        <div id="newsletter-success" role="status" class="hidden flex-col gap-3 border-l-2 border-accent pl-6">
+          <p class="font-display text-[clamp(1.75rem,2.2cqw,2.5rem)] font-semibold leading-tight">Welcome to the trail<span id="newsletter-greet"></span>.</p>
+          <p class="text-lg font-bold leading-8 text-foreground/70">Check your inbox to confirm — your first trail notes are on the way.</p>
+        </div>
+      </div>
+    </section>
+
     <footer data-reveal class="grid gap-12 sm:grid-cols-2 lg:grid-cols-[1fr_auto_auto] lg:gap-x-[clamp(3rem,11.042cqw,13.25rem)] lg:gap-y-0">
       <div class="flex flex-col justify-between sm:col-span-2 lg:col-span-1">
         <div class="fx-up flex flex-col gap-6">
@@ -500,7 +534,19 @@
         </div>
       </div>
     </article>`;
-  document.querySelector("main footer").insertAdjacentHTML("beforebegin", SECTIONS.map(sectionHtml).join(""));
+  document.getElementById("newsletter").insertAdjacentHTML("beforebegin", SECTIONS.map(sectionHtml).join(""));
+
+  // Newsletter (useState in Newsletter.tsx) — no backend yet, shows the success state
+  const nlForm = document.getElementById("newsletter-form");
+  nlForm.addEventListener("submit", (e) => {
+    e.preventDefault();
+    const first = String(new FormData(nlForm).get("name") || "").trim().split(" ")[0];
+    document.getElementById("newsletter-greet").textContent = first ? `, ${first}` : "";
+    nlForm.classList.add("hidden");
+    const ok = document.getElementById("newsletter-success");
+    ok.classList.remove("hidden");
+    ok.classList.add("flex");
+  });
 
   // Mobile menu (React state in Header.tsx)
   const btn = document.getElementById("menu-btn");
