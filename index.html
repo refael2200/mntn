@@ -455,16 +455,17 @@
             </div>
           </div>
           <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:gap-8">
-            <button type="submit" data-magnetic class="group inline-flex h-14 w-fit items-center justify-center gap-4 whitespace-nowrap bg-accent px-8 text-lg font-bold text-accent-foreground transition-colors hover:bg-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-background">
-              Join the trail
+            <button type="submit" data-magnetic class="group inline-flex h-14 w-fit items-center justify-center gap-4 whitespace-nowrap bg-accent px-8 text-lg font-bold text-accent-foreground transition-colors hover:bg-foreground disabled:pointer-events-none disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-background">
+              <span id="newsletter-btn-label">Join the trail</span>
               <svg viewBox="0 0 24 16" width="24" height="16" fill="currentColor" aria-hidden="true" class="h-4 w-6 transition-transform duration-500 group-hover:translate-x-1.5"><path d="M16 16L14.59 14.59L9 20.17V0H7V20.17L1.42 14.58L0 16L8 24L16 16Z" transform="matrix(0 -1 1 0 0 16)"/></svg>
             </button>
             <p class="text-sm font-medium leading-6 text-foreground/50">No spam, ever. Unsubscribe with one click.</p>
           </div>
+          <p id="newsletter-error" role="alert" class="hidden text-base font-bold text-accent">The trail got a little rocky — please try again in a moment.</p>
         </form>
         <div id="newsletter-success" role="status" class="hidden flex-col gap-3 border-l-2 border-accent pl-6">
-          <p class="font-display text-[clamp(1.75rem,2.2cqw,2.5rem)] font-semibold leading-tight">Welcome to the trail<span id="newsletter-greet"></span>.</p>
-          <p class="text-lg font-bold leading-8 text-foreground/70">Check your inbox to confirm — your first trail notes are on the way.</p>
+          <p id="newsletter-success-title" class="font-display text-[clamp(1.75rem,2.2cqw,2.5rem)] font-semibold leading-tight"></p>
+          <p id="newsletter-success-body" class="text-lg font-bold leading-8 text-foreground/70"></p>
         </div>
       </div>
     </section>
@@ -536,12 +537,47 @@
     </article>`;
   document.getElementById("newsletter").insertAdjacentHTML("beforebegin", SECTIONS.map(sectionHtml).join(""));
 
-  // Newsletter (useState in Newsletter.tsx) — no backend yet, shows the success state
+  // Newsletter → Supabase table newsletter_signups (same logic as Newsletter.tsx).
+  // The publishable key only allows inserting; the list is read on admin.html.
+  const SUPABASE_URL = "https://pgcbuflfvkfirfiyiamr.supabase.co";
+  const SUPABASE_KEY = "sb_publishable_U-htiTtKN1lHSuuOkkz5nw_i9VBPjCo";
   const nlForm = document.getElementById("newsletter-form");
-  nlForm.addEventListener("submit", (e) => {
+  const nlButton = nlForm.querySelector('button[type="submit"]');
+  const nlLabel = document.getElementById("newsletter-btn-label");
+  const nlError = document.getElementById("newsletter-error");
+  nlForm.addEventListener("submit", async (e) => {
     e.preventDefault();
-    const first = String(new FormData(nlForm).get("name") || "").trim().split(" ")[0];
-    document.getElementById("newsletter-greet").textContent = first ? `, ${first}` : "";
+    const data = new FormData(nlForm);
+    const name = String(data.get("name") || "").trim();
+    const email = String(data.get("email") || "").trim();
+    const first = name.split(" ")[0];
+    nlButton.disabled = true;
+    nlLabel.textContent = "Joining…";
+    nlError.classList.add("hidden");
+
+    let status = "error";
+    try {
+      const res = await fetch(`${SUPABASE_URL}/rest/v1/newsletter_signups`, {
+        method: "POST",
+        headers: { apikey: SUPABASE_KEY, "Content-Type": "application/json", Prefer: "return=minimal" },
+        body: JSON.stringify({ name, email }),
+      });
+      if (res.ok) status = "joined";
+      else if ((await res.json().catch(() => ({}))).code === "23505") status = "already";
+    } catch {}
+
+    nlButton.disabled = false;
+    nlLabel.textContent = "Join the trail";
+    if (status === "error") {
+      nlError.classList.remove("hidden");
+      return;
+    }
+    const already = status === "already";
+    document.getElementById("newsletter-success-title").textContent =
+      `${already ? "You're already on the trail" : "Welcome to the trail"}${first ? `, ${first}` : ""}.`;
+    document.getElementById("newsletter-success-body").textContent = already
+      ? "This email is already on our list — your next trail notes are on the way."
+      : "You're on the list. Your first trail notes arrive with our next letter.";
     nlForm.classList.add("hidden");
     const ok = document.getElementById("newsletter-success");
     ok.classList.remove("hidden");

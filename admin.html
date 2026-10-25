@@ -1,0 +1,211 @@
+<!doctype html>
+<html lang="en" class="dark">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="robots" content="noindex, nofollow" />
+  <title>Admin · MNTN</title>
+  <!-- Hidden admin page (mirrors src/pages/Admin.tsx). Not linked from the site.
+       The password is checked inside Supabase (admin_list_signups), never in this file. -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;700;800&family=Source+Serif+4:opsz,wght@8..60,600;8..60,700&display=swap" rel="stylesheet" />
+  <script src="https://cdn.tailwindcss.com/3.4.16"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['"Plus Jakarta Sans"', "Gilroy", "ui-sans-serif", "system-ui", "sans-serif"],
+            display: ['"Source Serif 4"', '"Chronicle Display"', "Georgia", "serif"],
+          },
+          colors: {
+            background: "hsl(var(--background) / <alpha-value>)",
+            foreground: "hsl(var(--foreground) / <alpha-value>)",
+            accent: { DEFAULT: "hsl(var(--accent) / <alpha-value>)", foreground: "hsl(var(--accent-foreground))" },
+          },
+        },
+      },
+    };
+  </script>
+  <style>
+    :root {
+      --background: 200 55% 10%;
+      --foreground: 0 0% 100%;
+      --accent: 42 94% 75%;
+      --accent-foreground: 200 55% 10%;
+    }
+    body { margin: 0; background: hsl(var(--background)); color: hsl(var(--foreground)); font-family: "Plus Jakarta Sans", sans-serif; -webkit-font-smoothing: antialiased; }
+  </style>
+</head>
+<body>
+<div class="min-h-[100dvh] bg-background px-6 py-6 text-foreground md:px-12 lg:px-20 lg:py-16">
+  <header class="flex h-[25px] items-center justify-between">
+    <a href="./" aria-label="MNTN home" class="font-display text-[32px] font-bold leading-6 tracking-[0.01em]">MNTN</a>
+    <button type="button" id="lock" class="hidden items-center gap-2 text-[17px] font-bold hover:text-accent">
+      <svg class="size-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect width="18" height="11" x="3" y="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+      Lock
+    </button>
+  </header>
+
+  <!-- Sign in -->
+  <main id="login" class="mx-auto flex max-w-md flex-col gap-8 pt-[18vh]">
+    <p class="flex items-center gap-4 text-sm font-extrabold uppercase leading-[22px] tracking-[0.3333em] text-accent sm:gap-6 sm:text-lg"><span aria-hidden="true" class="h-0.5 w-12 shrink-0 bg-accent sm:w-[72px]"></span>Admin</p>
+    <h1 class="font-display text-[clamp(2.25rem,5vw,3.5rem)] font-semibold leading-[1.2]">Base camp</h1>
+    <form id="login-form" class="flex flex-col gap-8">
+      <div class="flex flex-col gap-1">
+        <label for="admin-password" class="text-sm font-extrabold uppercase leading-none tracking-[0.2em] text-foreground/60">Password</label>
+        <input id="admin-password" name="password" type="password" autocomplete="current-password" required autofocus class="w-full rounded-none border-0 border-b-2 border-foreground/30 bg-transparent px-0 py-3 text-lg font-bold text-foreground outline-none placeholder:font-medium placeholder:text-foreground/35 focus:border-accent" />
+      </div>
+      <p id="login-error" role="alert" class="hidden text-base font-bold text-accent"></p>
+      <button type="submit" id="login-btn" class="inline-flex h-14 w-fit items-center justify-center bg-accent px-8 text-lg font-bold text-accent-foreground transition-colors hover:bg-foreground disabled:pointer-events-none disabled:opacity-50">Enter</button>
+    </form>
+  </main>
+
+  <!-- Subscribers -->
+  <main id="dashboard" class="mx-auto hidden max-w-[1462px] flex-col gap-10 pt-16">
+    <div class="flex flex-wrap items-end justify-between gap-6">
+      <div class="flex flex-col gap-6">
+        <p class="flex items-center gap-4 text-sm font-extrabold uppercase leading-[22px] tracking-[0.3333em] text-accent sm:gap-6 sm:text-lg"><span aria-hidden="true" class="h-0.5 w-12 shrink-0 bg-accent sm:w-[72px]"></span>Trail notes</p>
+        <h1 id="count" class="font-display text-[clamp(2.25rem,4vw,4rem)] font-semibold leading-[1.2]"></h1>
+      </div>
+      <div class="flex gap-3">
+        <button type="button" id="refresh" class="inline-flex h-12 items-center gap-2 border border-foreground/30 px-5 text-base font-bold transition-colors hover:border-accent hover:text-accent disabled:pointer-events-none disabled:opacity-50">
+          <svg id="refresh-icon" class="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"/><path d="M21 3v5h-5"/><path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"/><path d="M8 16H3v5"/></svg>
+          Refresh
+        </button>
+        <button type="button" id="export" class="inline-flex h-12 items-center gap-2 bg-accent px-5 text-base font-bold text-accent-foreground transition-colors hover:bg-foreground disabled:pointer-events-none disabled:opacity-50">
+          <svg class="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" x2="12" y1="15" y2="3"/></svg>
+          Export CSV
+        </button>
+      </div>
+    </div>
+    <p id="empty" class="hidden border-t border-foreground/10 pt-10 text-lg font-bold text-foreground/60">No sign-ups yet. They'll appear here as soon as someone joins from the site.</p>
+    <div id="table-wrap" class="hidden overflow-x-auto border-t border-foreground/10">
+      <table class="w-full min-w-[560px] text-left">
+        <thead>
+          <tr class="text-sm font-extrabold uppercase tracking-[0.2em] text-foreground/60">
+            <th class="py-4 pr-6 font-extrabold">Name</th>
+            <th class="py-4 pr-6 font-extrabold">Email</th>
+            <th class="py-4 font-extrabold">Signed up</th>
+          </tr>
+        </thead>
+        <tbody id="rows"></tbody>
+      </table>
+    </div>
+  </main>
+</div>
+
+<script>
+  const SUPABASE_URL = "https://pgcbuflfvkfirfiyiamr.supabase.co";
+  const SUPABASE_KEY = "sb_publishable_U-htiTtKN1lHSuuOkkz5nw_i9VBPjCo";
+  const SESSION_KEY = "mntn-admin-pass";
+  const dateFmt = new Intl.DateTimeFormat("en-GB", { dateStyle: "medium", timeStyle: "short" });
+  const $ = (id) => document.getElementById(id);
+
+  const readSession = () => { try { return sessionStorage.getItem(SESSION_KEY); } catch { return null; } };
+  const writeSession = (v) => { try { v ? sessionStorage.setItem(SESSION_KEY, v) : sessionStorage.removeItem(SESSION_KEY); } catch {} };
+
+  let password = null;
+  let rows = [];
+
+  const show = (signedIn) => {
+    $("login").classList.toggle("hidden", signedIn);
+    $("login").classList.toggle("flex", !signedIn);
+    $("dashboard").classList.toggle("hidden", !signedIn);
+    $("dashboard").classList.toggle("flex", signedIn);
+    $("lock").classList.toggle("hidden", !signedIn);
+    $("lock").classList.toggle("flex", signedIn);
+  };
+
+  const render = () => {
+    $("count").textContent = `${rows.length} ${rows.length === 1 ? "subscriber" : "subscribers"}`;
+    $("empty").classList.toggle("hidden", rows.length > 0);
+    $("table-wrap").classList.toggle("hidden", rows.length === 0);
+    $("export").disabled = rows.length === 0;
+    const body = $("rows");
+    body.replaceChildren(...rows.map((r) => {
+      const tr = document.createElement("tr");
+      tr.className = "border-t border-foreground/10 text-lg font-bold";
+      const name = document.createElement("td");
+      name.className = "py-4 pr-6";
+      name.textContent = r.name;
+      const email = document.createElement("td");
+      email.className = "py-4 pr-6";
+      const link = document.createElement("a");
+      link.href = `mailto:${r.email}`;
+      link.className = "text-accent hover:underline";
+      link.textContent = r.email;
+      email.append(link);
+      const date = document.createElement("td");
+      date.className = "py-4 font-medium text-foreground/60";
+      date.textContent = dateFmt.format(new Date(r.created_at));
+      tr.append(name, email, date);
+      return tr;
+    }));
+  };
+
+  const setLoading = (on) => {
+    $("login-btn").disabled = on;
+    $("login-btn").textContent = on ? "Checking…" : "Enter";
+    $("refresh").disabled = on;
+    $("refresh-icon").classList.toggle("animate-spin", on);
+  };
+
+  async function load(pass) {
+    setLoading(true);
+    $("login-error").classList.add("hidden");
+    let error = null;
+    try {
+      const res = await fetch(`${SUPABASE_URL}/rest/v1/rpc/admin_list_signups`, {
+        method: "POST",
+        headers: { apikey: SUPABASE_KEY, "Content-Type": "application/json" },
+        body: JSON.stringify({ p_password: pass }),
+      });
+      const data = await res.json();
+      if (res.ok) rows = data;
+      else error = data.code === "28P01" ? "Wrong password. Try again." : "Couldn't reach the database. Try again.";
+    } catch {
+      error = "Couldn't reach the database. Try again.";
+    }
+    setLoading(false);
+    if (error) {
+      writeSession(null);
+      password = null;
+      $("login-error").textContent = error;
+      $("login-error").classList.remove("hidden");
+      show(false);
+      return;
+    }
+    password = pass;
+    writeSession(pass);
+    render();
+    show(true);
+  }
+
+  $("login-form").addEventListener("submit", (e) => {
+    e.preventDefault();
+    load($("admin-password").value);
+  });
+  $("refresh").addEventListener("click", () => password && load(password));
+  $("lock").addEventListener("click", () => {
+    writeSession(null);
+    password = null;
+    rows = [];
+    $("admin-password").value = "";
+    show(false);
+  });
+  $("export").addEventListener("click", () => {
+    const cell = (v) => `"${String(v).replace(/"/g, '""')}"`;
+    const csv = ["Name,Email,Signed up", ...rows.map((r) => [cell(r.name), cell(r.email), cell(new Date(r.created_at).toISOString())].join(","))].join("\n");
+    const url = URL.createObjectURL(new Blob([csv], { type: "text/csv;charset=utf-8" }));
+    const a = Object.assign(document.createElement("a"), { href: url, download: `mntn-subscribers-${new Date().toISOString().slice(0, 10)}.csv` });
+    a.click();
+    URL.revokeObjectURL(url);
+  });
+
+  const saved = readSession();
+  if (saved) load(saved);
+</script>
+</body>
+</html>
